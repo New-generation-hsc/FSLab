@@ -8,6 +8,7 @@ these decorator are responsible for different function
 
 import abc
 import functools
+from exception  import CmdNotFound, PathException, ArgumentException
 
 
 def hash_argument(argument):
@@ -46,7 +47,7 @@ class CmdRouter(object):
         if func :
             func(args)
         else :
-            raise NotImplementedError("Not Implemented Yet")
+            raise ArgumentException("Argument Not Valid")
 
     def build_router(self, path):
         """
@@ -80,7 +81,7 @@ class CmdManager(object):
             if instance:
                 instance.route(route_str, f)
             else:
-                self.serve('404', 'error')
+                raise CmdNotFound("Command Not Found")
         return decorator
 
     def serve(self, path, cmd):
@@ -90,7 +91,7 @@ class CmdManager(object):
             route_path = instance.build_router(path)
             instance.serve(route_path, args)
         else:
-            self.serve('200', 'error')
+            raise CmdNotFound("Command Not Found")
 
     def run(self, command):
         """
@@ -101,3 +102,9 @@ class CmdManager(object):
             space_index = len(command)
         try:
             self.serve(command[space_index:], cmd=command[:space_index])
+        except PathException:
+            self.serve('500', 'error')
+        except CmdNotFound:
+            self.serve('404', 'error')
+        except ArgumentException:
+            self.serve('200', 'error')

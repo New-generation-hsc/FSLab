@@ -109,4 +109,4 @@ def switch_path_error(args):
 
 if __name__ == "__main__":
 
-    app.run('touch file file2')
+    app.run('ks file')
