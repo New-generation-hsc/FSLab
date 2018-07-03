@@ -44,18 +44,103 @@ class ErrorCmd(CmdRouter):
     The command Error handle class, include the following error:
     `command not found` : 404
     `command argument error` : 200
+    `switch path error` : 500
     """
-    optional_args = ['200', '400']
+    optional_args = ['404', '200', '500']
 
     def parse_args(self, argument):
-        return None
+        return argument
 
     def build_router(self, path):
         return [path]
 
+class CdCmd(CmdRouter):
+    """
+    The Command `cd`, change directory
+    the usage example is:
+    :> `cd` path
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(CdCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='cd', usage='%(prog)s path')
+        self.registe_parser()
+
+    def registe_parser(self):
+        self.parser.add_argument('path', help='the location path')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class MkDirCmd(CmdRouter):
+    """
+    The `mkdir` command : create an new empty directory
+    the command usage:
+    :> `mkdir` dir1, dir2, dir3...
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(MkDirCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='mkdir', usage='%(prog)s path')
+        self.registe_parser()
+
+    def registe_parser(self):
+        self.parser.add_argument('directory', nargs='+', help='the location path')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class RmCmd(CmdRouter):
+    """
+    the `rm` command: delete file or directory from current path
+    Command Usage:
+    :> `rm` file1, file2... : remove file 
+    :> `rm` -r dir1 : remove directory
+    """
+    optional_args = ['-r']
+
+    def __init__(self):
+        super(RmCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='rm', usage='%(prog)s [-r] options')
+        self.registe_parser()
+
+    def registe_parser(self):
+        self.parser.add_argument('-r', action='store_true', help='recrusive remove file')
+        self.parser.add_argument('path', nargs='+', help='the file and directory that want to delete')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class TouchCmd(CmdRouter):
+    """
+    the `touch` command: create  new empty file
+    Command Usage:
+    :> `touch` file1, file2...
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(TouchCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='touch', usage='%(prog)s files')
+        self.registe_parser()
+
+    def registe_parser(self):
+        self.parser.add_argument('files', nargs='+', help='filenaemes that created')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
 
 app.registe('ls', ListCmd)
 app.registe('error', ErrorCmd)
+app.registe('cd', CdCmd)
+app.registe('rm', RmCmd)
+app.registe('mkdir', MkDirCmd)
+app.registe('touch', TouchCmd)
 
 if __name__ == "__main__":
 

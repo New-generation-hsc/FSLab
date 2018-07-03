@@ -99,4 +99,5 @@ class CmdManager(object):
         space_index = command.find(' ')
         if(space_index == -1):
             space_index = len(command)
-        self.serve(command[space_index:], cmd=command[:space_index])
+        try:
+            self.serve(command[space_index:], cmd=command[:space_index])
