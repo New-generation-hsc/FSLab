@@ -1,11 +1,13 @@
 from command import app
 
+
 @app.route([], cmd='ls')
 def list_path(args):
     """
     list current path files and directory
     """
     raise NotImplementedError("Not Implemented Yet")
+
 
 @app.route(['-f'], cmd='ls')
 def list_files(args):
@@ -14,12 +16,14 @@ def list_files(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['-s'], cmd='ls')
 def list_sorted_path(args):
     """
     list the current path and display them in order
     """
     raise NotImplementedError("Not Implemented Yet")
+
 
 @app.route(['-d'], cmd='ls')
 def list_directory(args):
@@ -28,12 +32,14 @@ def list_directory(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['-s', '-d'], cmd='ls')
 def list_sorted_directory(args):
     """
     list the current directory in order
     """
     raise NotImplementedError("Not Implemented Yet")
+
 
 @app.route(['-s', '-f'], cmd='ls')
 def list_sorted_files(args):
@@ -42,12 +48,14 @@ def list_sorted_files(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['-s', '-l'], cmd='ls')
 def list_sorted_detail(args):
     """
     list the files detail in order
     """
     raise NotImplementedError("Not Implemented Yet")
+
 
 @app.route([], cmd='cd')
 def change_directory(args):
@@ -56,12 +64,14 @@ def change_directory(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route([], cmd='mkdir')
 def create_directory(args):
     """
     create new directory
     """
     raise NotImplementedError("Not Implemented Yet")
+
 
 @app.route([], cmd='rm')
 def remove_file(args):
@@ -70,6 +80,7 @@ def remove_file(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['-r'], cmd='rm')
 def remove_directory(args):
     """
@@ -77,12 +88,14 @@ def remove_directory(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route([], cmd='touch')
 def touch_file(args):
     """
     create a new empty file
     """
     raise NotImplementedError("Not Implememnted Yet")
+
 
 @app.route(['404'], cmd='error')
 def cmd_not_found(args):
@@ -92,6 +105,7 @@ def cmd_not_found(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['200'], cmd='error')
 def cmd_argument_error(args):
     """
@@ -100,6 +114,7 @@ def cmd_argument_error(args):
     """
     raise NotImplementedError("Not Implemented Yet")
 
+
 @app.route(['500'], cmd='error')
 def switch_path_error(args):
     """
@@ -107,6 +122,7 @@ def switch_path_error(args):
     """
     print("`{}` is not a valid path".format(args))
 
+
 if __name__ == "__main__":
 
-    app.run('ks file')
+    app.run('cd /path')

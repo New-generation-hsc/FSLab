@@ -131,7 +131,7 @@ class FileSystem(object):
         first = file_list[0]
         if first == '.':
             self._switch_path(file_list[1:])
-        elif first == '..' and self.cur_dir.parent != None:
+        elif first == '..' and not self.cur_dir.parent:
             self.cur_path = self.cur_path[:len(self.cur_path) - 1]
             self.cur_dir = self.cur_dir.parent
         elif first == '':
