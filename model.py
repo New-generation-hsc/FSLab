@@ -5,6 +5,7 @@ And this module define the `File System`
 import datetime
 from exception import CmdNotFound, PathException, ArgumentException
 from permission import request, login_required
+import settings
 
 
 class Node(object):
@@ -20,6 +21,7 @@ class Node(object):
         self.subdirectory = None # the sub directory
         self._parent = None
         self._belongs = None  # indicate the file belongs to which user
+        self.init_permission()  # initialize the file permission
 
     @property
     def name(self):
@@ -53,7 +55,6 @@ class Node(object):
     def belongs(self, user):
         self._belongs = user
 
-    @property
     def permission(self, username):
         val = self._permission.get(username, None)
         if val:
@@ -64,9 +65,18 @@ class Node(object):
     def display(self, deep):
         pass
 
-    def init_permission():
+    def init_permission(self):
         """the user who created has the highest permission, others only have read permission"""
-        
+        manager = settings.Singleton.getInstance().manager
+        for user in manager.users:
+            if user.name == "admin":
+                self._permission[user.name] = 0xF
+            elif user.name == "guest":
+                self._permission[user.name] = 0x1
+            elif user.name == settings.Singleton.getInstance().user.name:
+                self._permission[user.name] = 0xF
+            else:
+                self._permission[user.name] = 0x1
 
 
 class File(Node):
@@ -121,9 +131,7 @@ class FileSystem(object):
         in current path, create a new file
         """
         node = File(file_name)
-        print(self)
         node.parent = self.cur_dir
-        print("after")
         request('c', self.cur_dir)
         self.cur_dir.append(node)
 
@@ -161,7 +169,7 @@ class FileSystem(object):
         else:
             node = self.search(first)
             if not node or not node.isdir:
-                raise PathException("path not valid")
+                raise PathException("path not valid", ''.join(file_list))
             request('r', node)
             self.cur_path.append(node.name)
             self.cur_dir = node

@@ -1,21 +1,16 @@
+from settings import Singleton, System
+from command import app
+import surface
+import router
 
-from model import FileSystem
-from user_manage import UserManager
+manager = Singleton.getInstance().manager
+manager.login('guest', '')
 
-fs = FileSystem()
-manager = UserManager()
+surface.clear_screen()
 
-status = manager.login("admin", "admin")
-
-
-fs.create_file('file1')
-# fs.create_file('file2')
-# fs.create_file('file3')
-# fs.create_directory('dir1')
-# fs.create_directory('dir2')
-# fs.switch('dir1')
-# fs.create_file('file1')
-# fs.create_file('file2')
-# fs.create_directory('dir3')
-# fs.switch('/')
-fs.display()
+while True:
+	surface.print_prompt()
+	input_cmd = input()
+	if input_cmd == "quit":
+		break
+	app.run(input_cmd)

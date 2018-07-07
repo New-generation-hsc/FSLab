@@ -5,7 +5,7 @@ include :
 `revoke` permission
 `check` permission
 """
-from settings import ACCESS_MODE, Singleton
+import settings
 from exception import PermissionDeny, AuthenticationException
 from functools import wraps
 
@@ -15,20 +15,19 @@ def request(mode, file):
     access = list(mode)
     permission = 0x0;
     for char in access:
-        bin_permission = ACCESS_MODE.get(char, 0x0)
+        bin_permission = settings.ACCESS_MODE.get(char, 0x0)
         permission |= bin_permission
-    assert Singleton.getInstance().user != None
-    if (file.permission[Singleton.getInstance().user.name] & permission) != permission:
-        raise PermissionDeny("Permission Not Enough")
+    assert settings.Singleton.getInstance().user != None
+    if (file.permission(settings.Singleton.getInstance().user.name) & permission) != permission:
+        raise PermissionDeny("Permission Not Enough", permission)
 
 
 # login require decorator
 def login_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if not Singleton.getInstance().user:
+        if not settings.Singleton.getInstance().user:
             raise AuthenticationException("login required")
-        print(args, kwargs)
         f(*args, **kwargs)
     return wrapper
 

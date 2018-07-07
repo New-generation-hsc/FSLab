@@ -1,4 +1,6 @@
 from command import app
+import settings
+import surface
 
 
 @app.route([], cmd='ls')
@@ -6,7 +8,13 @@ def list_path(args):
     """
     list current path files and directory
     """
-    raise NotImplementedError("Not Implemented Yet")
+    fs = settings.System.getInstance().system
+    for count, file in enumerate(fs.files):
+        surface.print_path(file)
+        if (count + 1) % 5 == 0:
+            print()
+    if len(fs.files) > 0:
+        print()
 
 
 @app.route(['-f'], cmd='ls')
@@ -30,6 +38,11 @@ def list_directory(args):
     """
     list current path directory
     """
+    raise NotImplementedError("Not Implemented Yet")
+
+@app.route(['-l'], cmd='ls')
+def list_information(args):
+    """ list files information """
     raise NotImplementedError("Not Implemented Yet")
 
 
@@ -94,7 +107,9 @@ def touch_file(args):
     """
     create a new empty file
     """
-    raise NotImplementedError("Not Implememnted Yet")
+    fs = settings.System.getInstance().system
+    for file_name in args.files:
+        fs.create_file(file_name)
 
 
 @app.route(['404'], cmd='error')
@@ -125,4 +140,4 @@ def switch_path_error(args):
 
 if __name__ == "__main__":
 
-    app.run('cd /path')
+    app.run('')

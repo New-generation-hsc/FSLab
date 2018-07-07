@@ -1,7 +1,7 @@
 """
 用户管理员相关模块实现
 """
-from settings import Singleton
+import settings
 
 class User:
     """
@@ -27,6 +27,7 @@ class UserManager:
     def __init__(self):
         self.users = []
         self.users.append(User("admin", "admin"))
+        self.users.append(User("guest", ""))
 
     def search(self, username):
         """
@@ -53,7 +54,7 @@ class UserManager:
     def delete_user(self, username):
         user = self.search(username)
         if user:
-            if user.name != "admin":
+            if user.name != "admin" and user.name == "guest":
                 self.users.remove(user)
             return True
         return False
@@ -63,7 +64,7 @@ class UserManager:
         if user:
             status = user.check_psd(password)
             if status:
-                Singleton.getInstance().set_user(user)
+                settings.Singleton.getInstance().set_user(user)
             return status
         return False
 

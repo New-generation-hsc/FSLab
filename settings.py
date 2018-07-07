@@ -3,7 +3,7 @@ config the project setting
 and construct the global variable
 """
 from user_manage import UserManager
-
+from model import FileSystem
 
 ACCESS_MODE = {
 	'c' : 0x8,
@@ -30,14 +30,38 @@ class Singleton(object):
 
 	@property
 	def manager(self):
+		""" return user manager """
 		return self._manager
 
 	def set_user(self, user):
-		print(user)
 		self.current_user = user
 
 	@classmethod
 	def getInstance(cls):
 		if not cls.__instance:
 			cls.__instance = Singleton()
+		return cls.__instance
+
+
+class System(object):
+	"""
+	the class define the singleton file system shared by all module
+	"""
+	__instance = None
+
+	def __init__(self):
+		self.file_system = FileSystem()
+
+	@property
+	def system(self):
+		return self.file_system
+
+	@property
+	def path(self):
+		return self.file_system.path
+
+	@classmethod
+	def getInstance(cls):
+		if not cls.__instance:
+			cls.__instance = System()
 		return cls.__instance
