@@ -21,3 +21,17 @@ class ArgumentException(Exception):
 	the command argument not valid
 	"""
 	pass
+
+
+class PermissionDeny(Exception):
+	"""
+	access permission is not enough
+	"""
+	pass
+
+
+class AuthenticationException(Exception):
+	"""
+	login required
+	"""
+	pass

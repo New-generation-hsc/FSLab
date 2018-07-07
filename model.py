@@ -4,6 +4,8 @@ And this module define the `File System`
 """
 import datetime
 from exception import CmdNotFound, PathException, ArgumentException
+from permission import request, login_required
+
 
 class Node(object):
     """
@@ -13,10 +15,11 @@ class Node(object):
         self.file_name = file_name
         self.create_time = datetime.datetime.now()
 
-        self.permission = {} # the key is username, the value is xwr ---
+        self._permission = {} # the key is username, the value is xwr ---
         self._isdir = None # current file whether is file or directory
         self.subdirectory = None # the sub directory
-        self._parent = None 
+        self._parent = None
+        self._belongs = None  # indicate the file belongs to which user
 
     @property
     def name(self):
@@ -42,15 +45,28 @@ class Node(object):
     def parent(self, node):
         self._parent = node
 
+    @property
+    def belongs(self):
+        return self._belongs
+
+    @belongs.setter
+    def belongs(self, user):
+        self._belongs = user
+
+    @property
     def permission(self, username):
-        val = self.permission.get(username)
+        val = self._permission.get(username, None)
         if val:
             return val
         else:
-            return 0
+            return 0x1
 
     def display(self, deep):
         pass
+
+    def init_permission():
+        """the user who created has the highest permission, others only have read permission"""
+        
 
 
 class File(Node):
@@ -99,20 +115,26 @@ class FileSystem(object):
         self.root = Directory('/') 
         self.cur_dir = self.root # the current directory node
 
+    @login_required
     def create_file(self, file_name):
         """
         in current path, create a new file
         """
         node = File(file_name)
+        print(self)
         node.parent = self.cur_dir
+        print("after")
+        request('c', self.cur_dir)
         self.cur_dir.append(node)
 
+    @login_required
     def create_directory(self, file_name):
         """
         in current path, create a new directory
         """
         node = Directory(file_name)
         node.parent = self.cur_dir
+        request('c', self.cur_dir)
         self.cur_dir.append(node)
 
     def search(self, file_name):
@@ -140,6 +162,7 @@ class FileSystem(object):
             node = self.search(first)
             if not node or not node.isdir:
                 raise PathException("path not valid")
+            request('r', node)
             self.cur_path.append(node.name)
             self.cur_dir = node
         self._switch_path(file_list[1:])
@@ -160,6 +183,7 @@ class FileSystem(object):
         """
         return current path files include directory
         """
+        request('r', self.cur_dir)
         return self.cur_dir.subdirectory
 
     @property
@@ -169,6 +193,7 @@ class FileSystem(object):
         """
         return ''.join(self.cur_path)
 
+    @login_required
     def delete_file(self, file_path):
         """
         delete file from current path
@@ -179,9 +204,11 @@ class FileSystem(object):
         self.switch(path)
         node = self.search(file)
         if node:
+            request('d', self.cur_dir)
             self.cur_dir.remove(node)
         self.switch(current_path)
 
+    @login_required
     def delete_directory(self, dir_path):
         """
         delete directory from current path
@@ -192,6 +219,7 @@ class FileSystem(object):
         _, _, dir_name = dir_path.rpartition('/')
         self.switch('..')
         file = self.search(dir_name)
+        request('d', self.cur_dir)
         self.cur_dir.remove(file)
         self.switch(cur_path)
 
