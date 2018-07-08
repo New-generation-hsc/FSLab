@@ -64,4 +64,6 @@ class AuthenticationException(Exception):
 	"""
 	login required
 	"""
-	pass
+	def print_error(self):
+		msg = "Authenticate failed. Check username or password"
+		surface.print_error(msg)

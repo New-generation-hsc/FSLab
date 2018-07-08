@@ -172,9 +172,10 @@ class DeleteuserCmd(CmdRouter):
     def __init__(self):
         super(DeleteuserCmd, self).__init__()
         self.parser = argparse.ArgumentParser(prog='deleteuser', usage='%(prog)s')
+        self.register_parser()
 
     def register_parser(self):
-        pass
+        self.parser.add_argument('username', help='delete a user')
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())

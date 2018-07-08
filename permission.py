@@ -28,7 +28,7 @@ def login_required(f):
     def wrapper(*args, **kwargs):
         if not settings.Singleton.getInstance().user:
             raise AuthenticationException("login required")
-        f(*args, **kwargs)
+        return f(*args, **kwargs)
     return wrapper
 
 

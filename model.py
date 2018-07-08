@@ -22,7 +22,6 @@ class Node(object):
         self._parent = None
         self._belongs = None  # indicate the file belongs to which user
         self.init_permission()  # initialize the file permission
-        self._init_belongs()  # indicate file belongs to which user
 
     @property
     def name(self):
@@ -79,9 +78,10 @@ class Node(object):
             else:
                 self._permission[user.name] = 0x1
 
-    def _init_belongs(self):
-        user = settings.Singleton.getInstance().user
+    def set_belongs(self, user):
+        """ set the file belongs to a specific user """
         self._belongs = user
+        self._permission[user.name] = 0xF
 
 
 class File(Node):
@@ -139,6 +139,9 @@ class FileSystem(object):
         node.parent = self.cur_dir
         request('c', self.cur_dir)
         self.cur_dir.append(node)
+        user = settings.Singleton.getInstance().user
+        node.set_belongs(user)
+        return node
 
     @login_required
     def create_directory(self, file_name):
@@ -149,6 +152,9 @@ class FileSystem(object):
         node.parent = self.cur_dir
         request('c', self.cur_dir)
         self.cur_dir.append(node)
+        user = settings.Singleton.getInstance().user
+        node.set_belongs(user)
+        return node
 
     def search(self, file_name):
         """
@@ -166,7 +172,7 @@ class FileSystem(object):
         first = file_list[0]
         if first == '.':
             self._switch_path(file_list[1:])
-        elif first == '..' and not self.cur_dir.parent:
+        elif first == '..' and self.cur_dir.parent:
             self.cur_path = self.cur_path[:len(self.cur_path) - 1]
             self.cur_dir = self.cur_dir.parent
         elif first == '':
@@ -185,7 +191,7 @@ class FileSystem(object):
         change path
         """
         if path.startswith('/'):
-            self.cur_path = ['/']
+            self.cur_path = ['']
             self.cur_dir = self.root
             self._switch_path(path.split('/')[1:])
         else:
@@ -204,7 +210,7 @@ class FileSystem(object):
         """
         return current path
         """
-        return ''.join(self.cur_path)
+        return '/' + '/'.join(self.cur_path[1:])
 
     @login_required
     def delete_file(self, file_path):
@@ -234,7 +240,10 @@ class FileSystem(object):
         file = self.search(dir_name)
         request('d', self.cur_dir)
         self.cur_dir.remove(file)
-        self.switch(cur_path)
+        try:
+            self.switch(cur_path)
+        except PathException as e:
+            pass
 
     def _del_dir(self):
 
@@ -246,6 +255,21 @@ class FileSystem(object):
                 self._del_dir()
                 self.switch('..')
         self.cur_dir.subdirectory = []
+
+    def create_user_directory(self, user):
+        """ when a new user is created, a corresponding directory is created """
+        cur_path = self.path
+        self.switch('/')
+        node = self.create_directory(user.name)
+        node.set_belongs(user)
+        self.switch(cur_path)
+
+    def delete_user_directory(self, user):
+        """ when a user delete, then a corresponding directory is deleted """
+        cur_path = self.path
+        self.switch('/')
+        self.delete_directory(user.name)
+        self.switch(cur_path)
 
     def display(self):
         """

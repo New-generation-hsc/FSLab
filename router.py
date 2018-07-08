@@ -158,6 +158,9 @@ def add_user(args):
     if password == confirm:
         manager = settings.Singleton.getInstance().manager
         result = manager.add_user(username, password)
+        fs = settings.System.getInstance().system
+        if result:
+            fs.create_user_directory(result)
     else:
         raise AuthenticationException("two password are not unanimous")
 
@@ -170,7 +173,10 @@ def delete_user(args):
     '''raise NotImplementedError("Not Implemented Yet")'''
     username = args.username
     manager = settings.Singleton.getInstance().manager
-    manager.delete_user(username)
+    result = manager.delete_user(username)
+    if result:
+        fs = settings.System.getInstance().system
+        fs.delete_user_directory(result)
 
 @app.route([], cmd='checkuser')
 def check_user(args):

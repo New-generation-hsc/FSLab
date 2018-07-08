@@ -47,17 +47,18 @@ class UserManager:
 
     def add_user(self, username, password):
         if not self.search(username):
-            self.users.append(User(username, password))
-            return True
-        return False
+            user = User(username, password)
+            self.users.append(user)
+            return user
+        return None
 
     def delete_user(self, username):
         user = self.search(username)
         if user:
             if user.name != "admin" and user.name == "guest":
                 self.users.remove(user)
-            return True
-        return False
+            return user
+        return None
 
     def login(self, username, password):
         user = self.search(username)

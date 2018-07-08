@@ -8,7 +8,7 @@ these decorator are responsible for different function
 
 import abc
 import functools
-from exception  import CmdNotFound, PathException, ArgumentException, PermissionDeny
+from exception  import CmdNotFound, PathException, ArgumentException, PermissionDeny, AuthenticationException
 
 
 def hash_argument(argument):
@@ -109,4 +109,6 @@ class CmdManager(object):
         except ArgumentException as e:
             e.print_error()
         except PermissionDeny as e:
+            e.print_error()
+        except AuthenticationException as e:
             e.print_error()
