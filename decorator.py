@@ -2,7 +2,7 @@
 This is moudle where define different decorator
 these decorator are responsible for different function
 1. Command Router
-2. Commnad Register
+2. Commnad register
 3. User Permission
 """
 
@@ -36,7 +36,7 @@ class CmdRouter(object):
         raise NotImplementedError("No Need Implementation")
 
     @abc.abstractmethod
-    def registe_parser(self):
+    def register_parser(self):
         raise NotImplementedError("No Need Implementation")
 
     def route(self, route_str, f):
@@ -72,7 +72,7 @@ class CmdManager(object):
         super(CmdManager, self).__init__(*args, **kwargs)
         self.command = {}
 
-    def registe(self, cmd, cls):
+    def register(self, cmd, cls):
         self.command[cmd] = cls()
 
     def route(self, route_str, cmd):

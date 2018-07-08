@@ -23,9 +23,9 @@ class ListCmd(CmdRouter):
     def __init__(self):
         super(ListCmd, self).__init__()
         self.parser = argparse.ArgumentParser(prog='ls', usage='%(prog)s [options]')
-        self.registe_parser()
+        self.register_parser()
 
-    def registe_parser(self):
+    def register_parser(self):
         self.parser.add_argument('-s', action='store_true', help='display files in order')
         self.parser.add_argument('-f', action='store_true', help='display just files')
         self.parser.add_argument('-d', action='store_true', help='display just directory')
@@ -38,21 +38,6 @@ class ListCmd(CmdRouter):
     def print_help(self):
         self.parser.print_help()
 
-
-class ErrorCmd(CmdRouter):
-    """
-    The command Error handle class, include the following error:
-    `command not found` : 404
-    `command argument error` : 200
-    `switch path error` : 500
-    """
-    optional_args = ['404', '200', '500']
-
-    def parse_args(self, argument):
-        return argument
-
-    def build_router(self, path):
-        return [path]
 
 class CdCmd(CmdRouter):
     """
@@ -85,9 +70,9 @@ class MkDirCmd(CmdRouter):
     def __init__(self):
         super(MkDirCmd, self).__init__()
         self.parser = argparse.ArgumentParser(prog='mkdir', usage='%(prog)s path')
-        self.registe_parser()
+        self.register_parser()
 
-    def registe_parser(self):
+    def register_parser(self):
         self.parser.add_argument('directory', nargs='+', help='the location path')
 
     def parse_args(self, argument):
@@ -106,9 +91,9 @@ class RmCmd(CmdRouter):
     def __init__(self):
         super(RmCmd, self).__init__()
         self.parser = argparse.ArgumentParser(prog='rm', usage='%(prog)s [-r] options')
-        self.registe_parser()
+        self.register_parser()
 
-    def registe_parser(self):
+    def register_parser(self):
         self.parser.add_argument('-r', action='store_true', help='recrusive remove file')
         self.parser.add_argument('path', nargs='+', help='the file and directory that want to delete')
 
@@ -127,20 +112,138 @@ class TouchCmd(CmdRouter):
     def __init__(self):
         super(TouchCmd, self).__init__()
         self.parser = argparse.ArgumentParser(prog='touch', usage='%(prog)s files')
-        self.registe_parser()
+        self.register_parser()
 
-    def registe_parser(self):
+    def register_parser(self):
         self.parser.add_argument('files', nargs='+', help='filenaemes that created')
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
 
-app.registe('ls', ListCmd)
-app.registe('error', ErrorCmd)
-app.registe('cd', CdCmd)
-app.registe('rm', RmCmd)
-app.registe('mkdir', MkDirCmd)
-app.registe('touch', TouchCmd)
+
+class SuCmd(CmdRouter):
+    """
+    the 'su' command: switch to the special user
+    Command usage:
+    :> 'su' username
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(SuCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='su', usage='%(prog)s username')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('username', help='switch to special user')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class AdduserCmd(CmdRouter):
+    """
+    the 'adduser' command: add a new user
+    Command usage:
+    :> 'adduser'
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(AdduserCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='adduser', usage='%(prog)s')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('username', help='add a new user')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class DeleteuserCmd(CmdRouter):
+    """
+    the 'deleteuser' command: delete an old user
+    Command usage:
+    :> 'deleteuser'
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(DeleteuserCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='deleteuser', usage='%(prog)s')
+
+    def register_parser(self):
+        pass
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+class CheckuserCmd(CmdRouter):
+    """
+    the 'checkuser' command: check the current users
+    Command usage:
+    :> 'checkuser'
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(CheckuserCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='checkuser', usage='%(prog)s')
+
+    def registe_parser(self):
+        pass
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class FormatCmd(CmdRouter):
+    """
+    the 'format' command: format the current_user relative content
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(FormatCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='format', usage='%(prog)s')
+
+    def register_parser(self):
+        pass
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+class ClearCmd(CmdRouter):
+    """
+    the `clear` command:
+    clear current screen
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(ClearCmd, self).__init__()
+        self.parser = argparse.ArgumentParser(prog='clear', usage='%(prog)s')
+
+    def register_parser(self):
+        pass
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+
+app.register('ls', ListCmd)
+app.register('cd', CdCmd)
+app.register('rm', RmCmd)
+app.register('mkdir', MkDirCmd)
+app.register('touch', TouchCmd)
+app.register('su', SuCmd)
+app.register('adduser', AdduserCmd)
+app.register('deleteuser', DeleteuserCmd)
+app.register('checkuser', CheckuserCmd)
+app.register('format', FormatCmd)
+app.register('clear', ClearCmd)
 
 if __name__ == "__main__":
 

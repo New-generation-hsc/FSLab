@@ -22,6 +22,7 @@ class Node(object):
         self._parent = None
         self._belongs = None  # indicate the file belongs to which user
         self.init_permission()  # initialize the file permission
+        self._init_belongs()  # indicate file belongs to which user
 
     @property
     def name(self):
@@ -77,6 +78,10 @@ class Node(object):
                 self._permission[user.name] = 0xF
             else:
                 self._permission[user.name] = 0x1
+
+    def _init_belongs(self):
+        user = settings.Singleton.getInstance().user
+        self._belongs = user
 
 
 class File(Node):
