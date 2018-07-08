@@ -1,11 +1,24 @@
 # FSLab
 the operating system final project file system management
 
+### Download
+You can use the git command line interface, enter the following command
+
+```
+git clone git@github.com:New-generation-hsc/FSLab.git
+```
+
+### Run
+
+```python
+python main.py
+```
+
 ### Operation
 
 The default login user is guest, and the guest has only read permission. if you want to create file or directory, please login using `admin`
 
-The `admin` has all permission in any where, include the following permission:
+The `admin` has all permission in any place, include the following permission:
 
 - create file
 - create directory
