@@ -15,6 +15,7 @@ class Node(object):
     def __init__(self, file_name):
         self.file_name = file_name
         self.create_time = datetime.datetime.now()
+        self.absolute_path = None  # indicate the absolute path
 
         self._permission = {} # the key is username, the value is xwr ---
         self._isdir = None # current file whether is file or directory
@@ -83,6 +84,14 @@ class Node(object):
         self._belongs = user
         self._permission[user.name] = 0xF
 
+    def set_path(self, path):
+        """ set the absolute path """
+        self.absolute_path = path
+
+    @property
+    def path(self):
+        return self.absolute_path
+
 
 class File(Node):
     """
@@ -126,8 +135,8 @@ class FileSystem(object):
     """
     def __init__(self):
         super(FileSystem, self).__init__()
-        self.cur_path = ['/'] # the current path, that will be show in the console
-        self.root = Directory('/') 
+        self.cur_path = [''] # the current path, that will be show in the console
+        self.root = Directory('') 
         self.cur_dir = self.root # the current directory node
 
     @login_required
@@ -135,8 +144,12 @@ class FileSystem(object):
         """
         in current path, create a new file
         """
+        exist_node = self.search(file_name)
+        if exist_node:
+            return None
         node = File(file_name)
         node.parent = self.cur_dir
+        node.set_path('/'.join([self.path, node.name]))
         request('c', self.cur_dir)
         self.cur_dir.append(node)
         user = settings.Singleton.getInstance().user
@@ -148,8 +161,12 @@ class FileSystem(object):
         """
         in current path, create a new directory
         """
+        exist_node = self.search(file_name)
+        if exist_node:
+            return exist_node
         node = Directory(file_name)
         node.parent = self.cur_dir
+        node.set_path('/'.join([self.path, node.name]))
         request('c', self.cur_dir)
         self.cur_dir.append(node)
         user = settings.Singleton.getInstance().user
@@ -210,7 +227,7 @@ class FileSystem(object):
         """
         return current path
         """
-        return '/' + '/'.join(self.cur_path[1:])
+        return '/'.join(self.cur_path)
 
     @login_required
     def delete_file(self, file_path):
@@ -226,6 +243,7 @@ class FileSystem(object):
             request('d', self.cur_dir)
             self.cur_dir.remove(node)
         self.switch(current_path)
+        return node
 
     @login_required
     def delete_directory(self, dir_path):
@@ -244,6 +262,7 @@ class FileSystem(object):
             self.switch(cur_path)
         except PathException as e:
             pass
+        return file
 
     def _del_dir(self):
 
@@ -263,13 +282,15 @@ class FileSystem(object):
         node = self.create_directory(user.name)
         node.set_belongs(user)
         self.switch(cur_path)
+        return node
 
     def delete_user_directory(self, user):
         """ when a user delete, then a corresponding directory is deleted """
         cur_path = self.path
         self.switch('/')
-        self.delete_directory(user.name)
+        node = self.delete_directory(user.name)
         self.switch(cur_path)
+        return node
 
     def display(self):
         """

@@ -4,6 +4,8 @@ and construct the global variable
 """
 from user_manage import UserManager
 from model import FileSystem
+from table import SystemFileTable
+
 
 ACCESS_MODE = {
 	'c' : 0x8,
@@ -11,6 +13,15 @@ ACCESS_MODE = {
 	'w' : 0x2,
 	'r' : 0x1
 }
+
+
+UPDATE_MODE = {
+	'a' : 0x2,
+	'e' : 0x1
+}
+
+
+BASE_PATH = '.root'
 
 
 class Singleton(object):
@@ -23,6 +34,7 @@ class Singleton(object):
 	def __init__(self):
 		self.current_user = None
 		self._manager = UserManager()
+		self._table = SystemFileTable()
 
 	@property
 	def user(self):
@@ -35,6 +47,10 @@ class Singleton(object):
 
 	def set_user(self, user):
 		self.current_user = user
+
+	@property
+	def table(self):
+		return self._table
 
 	@classmethod
 	def getInstance(cls):

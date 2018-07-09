@@ -52,11 +52,13 @@ class PermissionDeny(Exception):
 		self.permission = permission
 
 	def print_error(self):
+		add = (self.permission & 0x20) >> 5
+		erase = (self.permission & 0x10) >> 4
 		create = (self.permission & 0x8) >> 3
 		delete = (self.permission & 0x4) >> 2
 		write = (self.permission & 0x2) >> 1
 		read = self.permission & 0x1
-		msg = "!Permission Deny; `{}` permission are need".format('create' * create + 'delete' * delete + 'write' * write + 'read' * read)
+		msg = "!Permission Deny; `{}` permission are need".format('add' * add + 'erase' * erase + 'create' * create + 'delete' * delete + 'write' * write + 'read' * read)
 		surface.print_error(msg)
 
 
@@ -67,3 +69,32 @@ class AuthenticationException(Exception):
 	def print_error(self):
 		msg = "Authenticate failed. Check username or password"
 		surface.print_error(msg)
+
+
+class ArgumentError(Exception):
+	"""
+	argparse parse failed
+	"""
+	def __init__(self, message, cmd):
+		super(ArgumentError, self).__init__(message)
+		self.cmd = cmd
+
+	def print_error(self):
+		surface.print_error("Argument Not Valid")
+		self.cmd.print_help()
+
+
+class ArgumentParserError(Exception):
+	pass
+
+
+class FileAccessException(Exception):
+	"""
+	you can only write and read an already opened file.
+	"""
+	def __init__(self, message, path):
+		super(FileAccessException, self).__init__(message)
+		self.path = path
+
+	def print_error(self):
+		surface.print_error("!File Access Deny, please check `{}` is opened".format(self.path))

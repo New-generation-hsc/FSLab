@@ -13,7 +13,7 @@ from functools import wraps
 # permission request 
 def request(mode, file):
     access = list(mode)
-    permission = 0x0;
+    permission = 0x0
     for char in access:
         bin_permission = settings.ACCESS_MODE.get(char, 0x0)
         permission |= bin_permission
@@ -30,6 +30,16 @@ def login_required(f):
             raise AuthenticationException("login required")
         return f(*args, **kwargs)
     return wrapper
+
+
+def update_user_permission(mode):
+    """ check current user has add or delete user permission whether or not"""
+    permission = 0x0
+    for char in list(mode):
+        bin_permission = settings.UPDATE_MODE.get(char, 0x0)
+        permission |= bin_permission
+    if (settings.Singleton.getInstance().user.permission & permission) != permission:
+        raise PermissionDeny("Permission Not Enough", permission << 4)
 
 
 class Permission(object):

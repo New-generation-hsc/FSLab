@@ -1,7 +1,10 @@
 from command import app
 import settings
 import surface
-from exception import AuthenticationException
+import real
+import os
+from exception import AuthenticationException, FileAccessException
+
 
 
 @app.route([], cmd='ls')
@@ -19,7 +22,7 @@ def list_files(args):
     list the given files
     """
     fs = settings.System.getInstance().system
-    files = filter(lambda x : not x.isdir, fs.files)
+    files = list(filter(lambda x : not x.isdir, fs.files))
     surface.print_files(files)
 
 
@@ -39,7 +42,7 @@ def list_directory(args):
     list current path directory
     """
     fs = settings.System.getInstance().system
-    directories = filter(lambda x : x.isdir, fs.files)
+    directories = list(filter(lambda x : x.isdir, fs.files))
     surface.print_files(directories)
 
 
@@ -56,7 +59,7 @@ def list_sorted_directory(args):
     list the current directory in order
     """
     fs = settings.System.getInstance().system
-    directories = filter(lambda x : x.isdir, fs.files)
+    directories = list(filter(lambda x : x.isdir, fs.files))
     files = sorted(directories, key=lambda x : x.name)
     surface.print_files(files)
 
@@ -67,7 +70,7 @@ def list_sorted_files(args):
     list the current path files in order
     """
     fs = settings.System.getInstance().system
-    files = filter(lambda x : not x.isdir, fs.files)
+    files = list(filter(lambda x : not x.isdir, fs.files))
     files = sorted(files, key=lambda x : x.name)
     surface.print_files(files)
 
@@ -98,7 +101,9 @@ def create_directory(args):
     """
     fs = settings.System.getInstance().system
     for file_name in args.directory:
-        fs.create_directory(file_name)
+        node = fs.create_directory(file_name)
+        if node:
+            real.create_directory(node.path)
 
 
 @app.route([], cmd='rm')
@@ -108,7 +113,9 @@ def remove_file(args):
     """
     fs = settings.System.getInstance().system
     for file_name in args.path:
-        fs.delete_file(file_name)
+        node = fs.delete_file(file_name)
+        if node:
+            real.delete_file(node.path)
 
 
 @app.route(['-r'], cmd='rm')
@@ -118,7 +125,9 @@ def remove_directory(args):
     """
     fs = settings.System.getInstance().system
     for file_name in args.path:
-        fs.delete_directory(file_name)
+        node = fs.delete_directory(file_name)
+        if node:
+            real.delete_directory(node.path)
 
 
 @app.route([], cmd='touch')
@@ -128,7 +137,9 @@ def touch_file(args):
     """
     fs = settings.System.getInstance().system
     for file_name in args.files:
-        fs.create_file(file_name)
+        node = fs.create_file(file_name)
+        if node:
+            real.create_file(node.path)
 
 
 @app.route([], cmd='su')
@@ -160,7 +171,11 @@ def add_user(args):
         result = manager.add_user(username, password)
         fs = settings.System.getInstance().system
         if result:
-            fs.create_user_directory(result)
+            node = fs.create_user_directory(result)
+            table = settings.Singleton.getInstance().table
+            table.add_user(result.name)
+            if node:
+                real.create_directory(node.path)
     else:
         raise AuthenticationException("two password are not unanimous")
 
@@ -176,7 +191,11 @@ def delete_user(args):
     result = manager.delete_user(username)
     if result:
         fs = settings.System.getInstance().system
-        fs.delete_user_directory(result)
+        node = fs.delete_user_directory(result)
+        table = settings.Singleton.getInstance().table
+        table.delete_user(result.name)
+        if node:
+            real.delete_directory(node.path)
 
 @app.route([], cmd='checkuser')
 def check_user(args):
@@ -193,7 +212,16 @@ def format(args):
     """
     format contents according to current users
     """
-    raise NotImplementedError("Not Implemented Yet")
+    user = settings.Singleton.getInstance().user
+    fs = settings.System.getInstance().system
+    manager = settings.Singleton.getInstance().user
+    if user.name == "admin":
+        if args.u:
+            format_user = manager.get_user(args.u)
+            if format_user:
+                fs.delete_user_directory(format_user)
+        else:
+            pass
 
 
 @app.route([], cmd='clear')
@@ -203,6 +231,86 @@ def clear_screen(args):
     """
     surface.clear_screen()
 
+
+@app.route([], cmd='read')
+def read_file(args):
+    """
+
+    :param args:
+    :return:
+    """
+
+    fs = settings.System.getInstance().system
+    file = fs.search(args.file)
+    user = settings.Singleton.getInstance().user
+    table = settings.Singleton.getInstance().table
+    if file and not file.isdir:
+        if not table.check_user_file(user.name, file.path):
+            raise FileAccessException("file not open", file.path)
+        with open(settings.BASE_PATH + file.path, 'r', encoding='utf-8') as f:
+            print(f.read())
+
+
+@app.route([], cmd='write')
+def write_file(args):
+    """
+
+    """
+    fs = settings.System.getInstance().system
+    file = fs.search(args.file)
+    user = settings.Singleton.getInstance().user
+    table = settings.Singleton.getInstance().table
+    if file and not file.isdir:
+        if not table.check_user_file(user.name, file.path):
+            raise FileAccessException("file not open", file.path)
+        with open(settings.BASE_PATH + file.path, 'a+', encoding='utf-8') as file:
+            file.write(args.content)
+
+
+@app.route([], cmd='open')
+def open_file(args):
+    """
+    open a file for write and read
+    """
+    fs = settings.System.getInstance().system
+    file = fs.search(args.file)
+    table = settings.Singleton.getInstance().table
+    user = settings.Singleton.getInstance().user
+    if file:
+        table.add_file_s(user.name, file.path)
+
+
+@app.route([], cmd='close')
+def close_file(args):
+    """
+    close a file
+    """
+    fs = settings.System.getInstance().system
+    file = fs.search(args.file)
+    table = settings.Singleton.getInstance().table
+    user = settings.Singleton.getInstance().user
+    if file:
+        table.delete_file_s(user.name, file.path)
+
+
+@app.route([], cmd='table')
+def display_system_table(args):
+    """
+    close a file
+    """
+    table = settings.Singleton.getInstance().table
+    table.display()
+
+@app.route(['-u'], cmd='table')
+def display_user_table(args):
+    """
+    close a file
+    """
+    table = settings.Singleton.getInstance().table
+    user = settings.Singleton.getInstance().user
+    user_table = table.search_user_s(user.name)
+    if user_table:
+        user_table.display()
 
 if __name__ == "__main__":
 

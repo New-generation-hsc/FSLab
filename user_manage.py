@@ -2,6 +2,7 @@
 用户管理员相关模块实现
 """
 import settings
+from permission import update_user_permission
 
 class User:
     """
@@ -10,6 +11,7 @@ class User:
     def __init__(self, username, password):
         self.name = username
         self._psd = password
+        self._permisson = 0x0
 
     def check_psd(self, password):
         if password == self._psd:
@@ -19,6 +21,26 @@ class User:
     def __repr__(self):
         return "<{}, {}>".format(self.name, self._psd)
 
+    @property
+    def permission(self):
+        return self._permisson
+
+    def set_permission(self, permission):
+        self._permisson = permission
+
+    def to_dict(self):
+        return {
+            "username" : self.name,
+            "password" : self._psd,
+            "permission" : self._permisson
+        }
+
+    @classmethod
+    def get_instance(cls, object_dict):
+        instance = cls(object_dict["username"], object_dict["password"])
+        instance.set_permission(object_dict["permission"])
+        return instance
+
 
 class UserManager:
     """
@@ -26,7 +48,9 @@ class UserManager:
     """
     def __init__(self):
         self.users = []
-        self.users.append(User("admin", "admin"))
+        user = User("admin", "admin")
+        user.set_permission(0x3)
+        self.users.append(user)
         self.users.append(User("guest", ""))
 
     def search(self, username):
@@ -41,11 +65,27 @@ class UserManager:
                 return user
         return None
 
+    def get_users(self):
+        """
+        return users not admin and guest
+        """
+        return list(filter(lambda x : x.name != "admin" and x.name != "guest", self.users))
+
+    def get_user(self, username):
+        """
+        get the specific user with username
+        """
+        for user in self.users:
+            if user.name == username:
+                return user
+        return None
+
     def display(self):
         for user in self.users:
             print(user.name)
 
     def add_user(self, username, password):
+        update_user_permission('a')
         if not self.search(username):
             user = User(username, password)
             self.users.append(user)
@@ -53,6 +93,7 @@ class UserManager:
         return None
 
     def delete_user(self, username):
+        update_user_permission('e')
         user = self.search(username)
         if user:
             if user.name != "admin" and user.name == "guest":

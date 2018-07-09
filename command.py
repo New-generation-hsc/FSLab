@@ -4,8 +4,16 @@ This module will contain all command that will be used in cmd
 import argparse
 from decorator import CmdManager
 from decorator import CmdRouter
+from exception import ArgumentParserError
+import re
 
 app = CmdManager()
+
+
+class ThrowingArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ArgumentParserError(message)
+
 
 class ListCmd(CmdRouter):
     """
@@ -22,7 +30,7 @@ class ListCmd(CmdRouter):
 
     def __init__(self):
         super(ListCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='ls', usage='%(prog)s [options]')
+        self.parser = ThrowingArgumentParser(prog='ls', usage='%(prog)s [options]')
         self.register_parser()
 
     def register_parser(self):
@@ -49,7 +57,7 @@ class CdCmd(CmdRouter):
 
     def __init__(self):
         super(CdCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='cd', usage='%(prog)s path')
+        self.parser = ThrowingArgumentParser(prog='cd', usage='%(prog)s path')
         self.registe_parser()
 
     def registe_parser(self):
@@ -57,6 +65,9 @@ class CdCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class MkDirCmd(CmdRouter):
@@ -69,7 +80,7 @@ class MkDirCmd(CmdRouter):
 
     def __init__(self):
         super(MkDirCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='mkdir', usage='%(prog)s path')
+        self.parser = ThrowingArgumentParser(prog='mkdir', usage='%(prog)s path')
         self.register_parser()
 
     def register_parser(self):
@@ -77,6 +88,9 @@ class MkDirCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class RmCmd(CmdRouter):
@@ -90,7 +104,7 @@ class RmCmd(CmdRouter):
 
     def __init__(self):
         super(RmCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='rm', usage='%(prog)s [-r] options')
+        self.parser = ThrowingArgumentParser(prog='rm', usage='%(prog)s [-r] options')
         self.register_parser()
 
     def register_parser(self):
@@ -99,6 +113,9 @@ class RmCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class TouchCmd(CmdRouter):
@@ -111,7 +128,7 @@ class TouchCmd(CmdRouter):
 
     def __init__(self):
         super(TouchCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='touch', usage='%(prog)s files')
+        self.parser = ThrowingArgumentParser(prog='touch', usage='%(prog)s files')
         self.register_parser()
 
     def register_parser(self):
@@ -119,6 +136,9 @@ class TouchCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class SuCmd(CmdRouter):
@@ -131,7 +151,7 @@ class SuCmd(CmdRouter):
 
     def __init__(self):
         super(SuCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='su', usage='%(prog)s username')
+        self.parser = ThrowingArgumentParser(prog='su', usage='%(prog)s username')
         self.register_parser()
 
     def register_parser(self):
@@ -139,6 +159,9 @@ class SuCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class AdduserCmd(CmdRouter):
@@ -151,7 +174,7 @@ class AdduserCmd(CmdRouter):
 
     def __init__(self):
         super(AdduserCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='adduser', usage='%(prog)s')
+        self.parser = ThrowingArgumentParser(prog='adduser', usage='%(prog)s')
         self.register_parser()
 
     def register_parser(self):
@@ -159,6 +182,9 @@ class AdduserCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class DeleteuserCmd(CmdRouter):
@@ -171,7 +197,7 @@ class DeleteuserCmd(CmdRouter):
 
     def __init__(self):
         super(DeleteuserCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='deleteuser', usage='%(prog)s')
+        self.parser = ThrowingArgumentParser(prog='deleteuser', usage='%(prog)s')
         self.register_parser()
 
     def register_parser(self):
@@ -179,6 +205,9 @@ class DeleteuserCmd(CmdRouter):
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 class CheckuserCmd(CmdRouter):
     """
@@ -190,13 +219,16 @@ class CheckuserCmd(CmdRouter):
 
     def __init__(self):
         super(CheckuserCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='checkuser', usage='%(prog)s')
+        self.parser = ThrowingArgumentParser(prog='checkuser', usage='%(prog)s')
 
     def registe_parser(self):
         pass
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class FormatCmd(CmdRouter):
@@ -207,13 +239,17 @@ class FormatCmd(CmdRouter):
 
     def __init__(self):
         super(FormatCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='format', usage='%(prog)s')
+        self.parser = ThrowingArgumentParser(prog='format', usage='%(prog)s')
+        self.register_parser()
 
     def register_parser(self):
-        pass
+        self.parser.add_argument("-u", nargs='?', help='indicate format a specific user')
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 class ClearCmd(CmdRouter):
@@ -225,13 +261,125 @@ class ClearCmd(CmdRouter):
 
     def __init__(self):
         super(ClearCmd, self).__init__()
-        self.parser = argparse.ArgumentParser(prog='clear', usage='%(prog)s')
+        self.parser = ThrowingArgumentParser(prog='clear', usage='%(prog)s')
 
     def register_parser(self):
         pass
 
     def parse_args(self, argument):
         return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+class WriteCmd(CmdRouter):
+    """
+    write file
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(WriteCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='write', usage='%(prog)s file content')
+        self.register_parser()
+        self.pattern = re.compile(r"(?P<file>\w+) (?P<content>(\".*\"|\w+))")
+
+    def register_parser(self):
+        self.parser.add_argument('file', help='write file')
+        self.parser.add_argument('content', help='file content')
+
+    def parse_args(self, argument):
+        match = self.pattern.search(argument)
+        file_name, content = match.group("file"), match.group("content").strip("\"")
+        return self.parser.parse_args([file_name, content])
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+class ReadCmd(CmdRouter):
+    """
+    read file
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(ReadCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='read', usage='%(prog)s file')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('file', help='read file')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+class OpenCmd(CmdRouter):
+    """
+    read file
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(OpenCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='open', usage='%(prog)s file')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('file', help='open file')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+class CloseCmd(CmdRouter):
+    """
+    read file
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(CloseCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='close', usage='%(prog)s file')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('file', help='close file')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+class TableCmd(CmdRouter):
+    """
+    read file
+    """
+    optional_args = ['-u']
+
+    def __init__(self):
+        super(TableCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='table', usage='%(prog)s [-u]')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('-u', action='store_true',  help='show current user file table')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
 
 
 app.register('ls', ListCmd)
@@ -245,6 +393,11 @@ app.register('deleteuser', DeleteuserCmd)
 app.register('checkuser', CheckuserCmd)
 app.register('format', FormatCmd)
 app.register('clear', ClearCmd)
+app.register('write', WriteCmd)
+app.register('read', ReadCmd)
+app.register('open', OpenCmd)
+app.register('close', CloseCmd)
+app.register('table', TableCmd)
 
 if __name__ == "__main__":
 

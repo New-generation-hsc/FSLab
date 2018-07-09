@@ -18,10 +18,19 @@ CMD_COLOR = {
 }
 
 
+def format_path(path, user):
+    if path == '':
+        return '/'
+    elif path.startswith('/' + user.name):
+        return '~' + path[len(user.name) + 1:]
+    return path
+
+
 def print_prompt():
     user = settings.Singleton.getInstance().user
     name = "guest" if not user else user.name
     path = settings.System.getInstance().path
+    path = format_path(path, user)
     print(CMD_COLOR['GREEN'] + "({}): ".format(name) + "{}".format(path) + " > " + CMD_COLOR['ENDC'], end='')
 
 

@@ -8,7 +8,8 @@ these decorator are responsible for different function
 
 import abc
 import functools
-from exception  import CmdNotFound, PathException, ArgumentException, PermissionDeny, AuthenticationException
+from exception  import CmdNotFound, PathException, ArgumentException, PermissionDeny
+from exception import AuthenticationException, ArgumentError, ArgumentParserError, FileAccessException
 
 
 def hash_argument(argument):
@@ -87,7 +88,10 @@ class CmdManager(object):
     def serve(self, path, cmd):
         instance = self.command.get(cmd)
         if instance:
-            args = instance.parse_args(path)
+            try:
+                args = instance.parse_args(path)
+            except ArgumentParserError as e:
+                raise ArgumentError("argument error", instance)
             route_path = instance.build_router(path)
             instance.serve(route_path, args)
         else:
@@ -111,4 +115,8 @@ class CmdManager(object):
         except PermissionDeny as e:
             e.print_error()
         except AuthenticationException as e:
+            e.print_error()
+        except ArgumentError as e:
+            e.print_error()
+        except FileAccessException as e:
             e.print_error()
