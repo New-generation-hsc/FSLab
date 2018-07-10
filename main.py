@@ -12,6 +12,8 @@ load.load_user()
 load.trans_to_tree(settings.BASE_PATH)
 surface.clear_screen()
 
+manager.login('guest', '')
+
 while True:
 	surface.print_prompt()
 	input_cmd = input()

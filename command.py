@@ -382,6 +382,28 @@ class TableCmd(CmdRouter):
         self.parser.print_help()
 
 
+class NodeCmd(CmdRouter):
+    """
+    read file
+    """
+    optional_args = []
+
+    def __init__(self):
+        super(NodeCmd, self).__init__()
+        self.parser = ThrowingArgumentParser(prog='node', usage='%(prog)s file')
+        self.register_parser()
+
+    def register_parser(self):
+        self.parser.add_argument('file', help='show file')
+
+    def parse_args(self, argument):
+        return self.parser.parse_args(argument.split())
+
+    def print_help(self):
+        self.parser.print_help()
+
+
+
 app.register('ls', ListCmd)
 app.register('cd', CdCmd)
 app.register('rm', RmCmd)
@@ -398,6 +420,7 @@ app.register('read', ReadCmd)
 app.register('open', OpenCmd)
 app.register('close', CloseCmd)
 app.register('table', TableCmd)
+app.register('node', NodeCmd)
 
 if __name__ == "__main__":
 

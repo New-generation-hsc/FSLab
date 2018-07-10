@@ -22,6 +22,8 @@ class Node(object):
         self.subdirectory = None # the sub directory
         self._parent = None
         self._belongs = None  # indicate the file belongs to which user
+        self._size = 0
+        self._inode = None
         self.init_permission()  # initialize the file permission
 
     @property
@@ -91,6 +93,20 @@ class Node(object):
     @property
     def path(self):
         return self.absolute_path
+
+    @property
+    def size(self):
+        return self._size
+
+    def set_size(self, size):
+        self._size = size
+
+    @property
+    def inode(self):
+        return self._inode
+
+    def set_inode(self, node):
+        self._inode = node
 
 
 class File(Node):

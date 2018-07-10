@@ -100,10 +100,15 @@ def create_directory(args):
     create new directory
     """
     fs = settings.System.getInstance().system
+    fat = settings.Singleton.getInstance().fat
     for file_name in args.directory:
         node = fs.create_directory(file_name)
         if node:
             real.create_directory(node.path)
+            node.set_size(real.get_size(node.path))
+            item = fat.allocate()
+            node.set_inode(item.current)
+            fat.reallocate(item.current, node.size)
 
 
 @app.route([], cmd='rm')
@@ -116,6 +121,8 @@ def remove_file(args):
         node = fs.delete_file(file_name)
         if node:
             real.delete_file(node.path)
+            fat = settings.Singleton.getInstance().fat
+            fat.release(node.inode)
 
 
 @app.route(['-r'], cmd='rm')
@@ -128,6 +135,8 @@ def remove_directory(args):
         node = fs.delete_directory(file_name)
         if node:
             real.delete_directory(node.path)
+            fat = settings.Singleton.getInstance().fat
+            fat.release(node.inode)
 
 
 @app.route([], cmd='touch')
@@ -136,10 +145,15 @@ def touch_file(args):
     create a new empty file
     """
     fs = settings.System.getInstance().system
+    fat = settings.Singleton.getInstance().fat
     for file_name in args.files:
         node = fs.create_file(file_name)
         if node:
             real.create_file(node.path)
+            node.set_size(real.get_size(node.path))
+            item = fat.allocate()
+            node.set_inode(item.current)
+            fat.reallocate(item.current, node.size)
 
 
 @app.route([], cmd='su')
@@ -176,6 +190,11 @@ def add_user(args):
             table.add_user(result.name)
             if node:
                 real.create_directory(node.path)
+                node.set_size(real.get_size(node.path))
+                fat = settings.Singleton.getInstance().fat
+                item = fat.allocate()
+                node.set_inode(item.current)
+                fat.reallocate(item.current, node.size)
     else:
         raise AuthenticationException("two password are not unanimous")
 
@@ -196,6 +215,8 @@ def delete_user(args):
         table.delete_user(result.name)
         if node:
             real.delete_directory(node.path)
+            fat = settings.Singleton.getInstance().fat
+            fat.release(node.inode)
 
 @app.route([], cmd='checkuser')
 def check_user(args):
@@ -282,8 +303,12 @@ def write_file(args):
     if file and not file.isdir:
         if not table.check_user_file(user.name, file.path):
             raise FileAccessException("file not open", file.path)
-        with open(settings.BASE_PATH + file.path, 'a+', encoding='utf-8') as file:
-            file.write(args.content)
+        with open(settings.BASE_PATH + file.path, 'a+', encoding='utf-8') as f:
+            f.write(args.content)
+        file.set_size(real.get_size(file.path))
+        fat = settings.Singleton.getInstance().fat
+        print(file.inode, file.size)
+        fat.reallocate(file.inode, file.size)
 
 
 @app.route([], cmd='open')
@@ -330,6 +355,15 @@ def display_user_table(args):
     user_table = table.search_user_s(user.name)
     if user_table:
         user_table.display()
+
+
+@app.route([], cmd='node')
+def show_nodes(args):
+    fs = settings.System.getInstance().system
+    file = fs.search(args.file)
+    fat = settings.Singleton.getInstance().fat
+    if file:
+        fat.display(file.inode)
 
 if __name__ == "__main__":
 

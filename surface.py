@@ -99,7 +99,7 @@ def print_file_info(file):
         permission_str += mode if permission else "-"
 
     print(permission_str, file.belongs.name, file.time,  end='')
-    print(' ' * 2, end='')
+    print(' ' * 2, file.size, ' ' * 2, file.inode, ' ' * 2, end='')
     print_path(file)
     print()
 

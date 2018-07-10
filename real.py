@@ -48,3 +48,11 @@ def format_user_directory(user):
     path = settings.BASE_PATH + '/' + user.name
     shutil.rmtree(path)
     os.makedirs(path)
+
+
+def get_size(relative_path):
+    """
+    get file size
+    """
+    path = settings.BASE_PATH + relative_path
+    return os.path.getsize(path)

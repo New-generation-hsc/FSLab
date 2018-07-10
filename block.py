@@ -6,13 +6,15 @@ import abc
 
 
 def print_line(deep, length):
-	print(' '* deep * 18, '+', '-'*length, '+', sep='')
+	print(' '* deep * 18, '+', '-'*length, '+', '-' * length, '+', sep='')
 
 
-def print_index(deep, index, length, char='|'):
+def print_index(deep, index, length, char='|', size=0):
 	idx_str = str(index)
 	rest = length - len(idx_str) - length // 2
-	print(' ' * deep * 18, char, ' ' * (length // 2), index, ' ' * rest, char, sep='')
+	size_str = str(size)
+	size_rest = length - len(size_str) - length // 2
+	print(' ' * deep * 18, char, ' ' * (length // 2), index, ' ' * rest, char, ' ' * (length // 2), size, ' ' * size_rest, char, sep='')
 
 
 class Item(object):
@@ -22,6 +24,7 @@ class Item(object):
 	def __init__(self, current, next_idx=-1):
 		self._cur = current
 		self.next_idx = next_idx
+		self._size = 0
 
 	@property
 	def current(self):
@@ -39,6 +42,13 @@ class Item(object):
 	def next(self, idx):
 		self.next_idx = idx
 
+	@property
+	def size(self):
+		return self._size
+
+	def set_size(self, size):
+		self._size = size
+
 	def __repr__(self):
 		return "<{}, {}>".format(self.current, self.next)
 
@@ -49,11 +59,12 @@ class FAT(object):
 	the last node is -1
 	"""
 
-	def __init__(self, size):
+	def __init__(self, size, block_size=512):
 		"""
 		initialize the fat table, and all block is empty
 		"""
 		self.nodes = [Item(-1, -1) for _ in range(size)]
+		self.max_block_size = block_size
 
 	def next(self, index):
 		if index == -1:
@@ -68,7 +79,7 @@ class FAT(object):
 		for idx in range(len(self.nodes)):
 			if self.nodes[idx].current == -1:
 				self.nodes[idx].current = idx
-				return idx
+				return self.nodes[idx]
 		return -1
 
 	def link(self, current, next_idx):
@@ -81,13 +92,49 @@ class FAT(object):
 		"""
 		display a file block in the console
 		"""
+		if idx is None or idx == -1:
+			return
 		print_line(0, 16)
 		while idx != -1:
-			print_index(0, idx, 16)
+			item = self.nodes[idx]
+			print_index(0, idx, 16, size=item.size)
 			print_line(0, 16)
 			idx = self.next(idx)
-		print_index(0, -1, 16)
+		print_index(0, -1, 16, size=-1)
 		print_line(0, 16)
+
+	def get_item(self, idx):
+		return self.nodes[idx]
+
+	def reallocate(self, idx, size):
+		while self.next(idx) != -1 and size > 0:
+			size = size - self.max_block_size
+			idx = self.next(idx)
+
+		cur_item = self.get_item(idx)
+		if size <= self.max_block_size:
+			cur_item.set_size(size)
+		else:
+			cur_item.set_size(self.max_block_size)
+		size = size - self.max_block_size
+		prev_idx = idx
+
+		while size > 0:
+			item = self.allocate()
+			self.link(prev_idx, item.current)
+			if size < self.max_block_size:
+				item.set_size(size)
+			else:
+				item.set_size(self.max_block_size)
+			size -= self.max_block_size
+			prev_idx = item.current
+
+	def release(self, idx):
+		if idx is None or idx == -1:
+			return
+		self.release(self.next(idx))
+		self.nodes[idx].current = -1
+		self.nodes[idx].next = -1
 
 
 class Block(object):
@@ -227,14 +274,18 @@ class BlockManager(object):
 
 if __name__ == "__main__":
 
-	fat = FAT(5)
+	fat = FAT(1024)
+	item = fat.allocate()
+	fat.reallocate(item.current, 4096)
 
-	start = fat.allocate()
-	prev = start
+	fat.release(item.current)
 
-	for i in range(5):
-		next_idx = fat.allocate()
-		fat.link(prev, next_idx)
-		prev = next_idx
+	new_item = fat.allocate()
+	fat.reallocate(new_item.current, 812)
 
-	fat.display(start)
+	fat.display(item.current)
+
+	fat.display(new_item.current)
+
+	fat.reallocate(item.current, 9028)
+	fat.display(item.current)

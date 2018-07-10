@@ -5,6 +5,7 @@ and construct the global variable
 from user_manage import UserManager
 from model import FileSystem
 from table import SystemFileTable
+from block import FAT
 
 
 ACCESS_MODE = {
@@ -36,6 +37,7 @@ class Singleton(object):
 		self.current_user = None
 		self._manager = UserManager()
 		self._table = SystemFileTable()
+		self._fat = FAT(1024)
 
 	@property
 	def user(self):
@@ -52,6 +54,10 @@ class Singleton(object):
 	@property
 	def table(self):
 		return self._table
+
+	@property
+	def fat(self):
+		return self._fat
 
 	@classmethod
 	def getInstance(cls):

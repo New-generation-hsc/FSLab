@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <usermanager>
     <user>
-        <permission>0</permission>
         <password>123</password>
+        <permission>0</permission>
         <username>user</username>
     </user>
 </usermanager>
