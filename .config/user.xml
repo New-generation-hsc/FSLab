@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<usermanager>
+    <user>
+        <permission>0</permission>
+        <password>123</password>
+        <username>user</username>
+    </user>
+</usermanager>

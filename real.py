@@ -31,7 +31,6 @@ def delete_file(relative_path):
     """
     path = settings.BASE_PATH + relative_path
     os.remove(path)
-    print(path)
 
 
 def delete_directory(relative_path):
@@ -40,4 +39,12 @@ def delete_directory(relative_path):
     """
     path = settings.BASE_PATH + relative_path
     shutil.rmtree(path)
-    print(path)
+
+
+def format_user_directory(user):
+    """
+    format a user directory
+    """
+    path = settings.BASE_PATH + '/' + user.name
+    shutil.rmtree(path)
+    os.makedirs(path)

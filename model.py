@@ -128,6 +128,10 @@ class Directory(Node):
         for node in self.subdirectory:
             node.display(deep + 1)
 
+    def clear(self):
+        self.subdirectory = []
+        return self
+
 
 class FileSystem(object):
     """
@@ -297,8 +301,28 @@ class FileSystem(object):
         display current directory file name include directory
         """
         self.root.display(0)
-        
 
+    def format_user(self, user):
+        """
+        format a specific user
+        """
+        cur_path = self.path
+        self.switch('/' + user.name)
+        self.cur_dir.subdirectory = []
+        self.switch(cur_path)
+
+    def format(self, user=None):
+        """
+        format a user or all user
+        """
+        if user:
+            self.format_user(user)
+        else:
+            self.switch('/')
+            users = settings.Singleton.getInstance().manager.get_users()
+            files = filter(lambda x : x.name in [user.name for user in users], self.cur_dir.subdirectory)
+            files = list(map(lambda x : x.clear(), files))
+            self.cur_dir.subdirectory = files
 
 if __name__ == "__main__":
 

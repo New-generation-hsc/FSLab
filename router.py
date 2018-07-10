@@ -214,14 +214,33 @@ def format(args):
     """
     user = settings.Singleton.getInstance().user
     fs = settings.System.getInstance().system
-    manager = settings.Singleton.getInstance().user
     if user.name == "admin":
-        if args.u:
-            format_user = manager.get_user(args.u)
-            if format_user:
-                fs.delete_user_directory(format_user)
-        else:
-            pass
+        path = fs.path
+        fs.switch('/')
+        users = settings.Singleton.getInstance().manager.get_users()
+        files = list(filter(lambda x : x.name not in [user.name for user in users], fs.files))
+        for file in files:
+            if file.isdir:
+                real.delete_directory(file.path)
+            else:
+                real.delete_file(file.path)
+        for user in users:
+            real.format_user_directory(user)
+        fs.format()
+
+@app.route(['-u'], cmd='format')
+def format_user(args):
+    """
+    format a user
+    """
+    user = settings.Singleton.getInstance().user
+    fs = settings.System.getInstance().system
+    manager = settings.Singleton.getInstance().manager
+    if user.name == "admin":
+        user = manager.get_user(args.u)
+        if user:
+            fs.format(user)
+            real.format_user_directory(user)
 
 
 @app.route([], cmd='clear')

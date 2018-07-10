@@ -235,7 +235,7 @@ class FormatCmd(CmdRouter):
     """
     the 'format' command: format the current_user relative content
     """
-    optional_args = []
+    optional_args = ['-u']
 
     def __init__(self):
         super(FormatCmd, self).__init__()

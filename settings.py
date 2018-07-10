@@ -22,6 +22,7 @@ UPDATE_MODE = {
 
 
 BASE_PATH = '.root'
+USER_PATH = '.config/user.xml'
 
 
 class Singleton(object):
